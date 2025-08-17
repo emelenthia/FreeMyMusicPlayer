@@ -6,10 +6,9 @@ import android.util.Log
 import android.util.TypedValue
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
 import com.enzo.freemymusicplayer.databinding.ActivitySettingsBinding
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
 
@@ -67,7 +66,6 @@ class SettingsActivity : AppCompatActivity() {
         super.onResume()
         applyThemeToActionBar()
         applyThemeColors()
-        applySkinBackground()
     }
     
     private fun applyThemeToActionBar() {
@@ -132,31 +130,4 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
     
-    private fun applySkinBackground() {
-        val skinUri = ThemeHelper.getSkinUri(this)
-        val opacity = ThemeHelper.getSkinOpacity(this)
-        
-        Log.d("SettingsActivity", "applySkinBackground - skinUri: $skinUri, opacity: $opacity")
-        
-        if (skinUri != null && skinUri.startsWith("file://")) {
-            val file = java.io.File(skinUri.removePrefix("file://"))
-            if (file.exists()) {
-                Log.d("SettingsActivity", "Loading image from file: ${file.absolutePath}")
-                
-                Glide.with(this)
-                    .load(file)
-                    .into(binding.debugImageBackground)
-                
-                val alpha = opacity / 100f
-                binding.debugImageBackground.alpha = alpha
-                binding.debugImageBackground.visibility = android.view.View.VISIBLE
-                
-                Log.d("SettingsActivity", "Background image set with opacity: $opacity%")
-            } else {
-                binding.debugImageBackground.visibility = android.view.View.GONE
-            }
-        } else {
-            binding.debugImageBackground.visibility = android.view.View.GONE
-        }
-    }
 }

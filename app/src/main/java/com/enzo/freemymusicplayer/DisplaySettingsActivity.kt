@@ -15,10 +15,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.bumptech.glide.Glide
 import com.enzo.freemymusicplayer.databinding.ActivityDisplaySettingsBinding
 
-class DisplaySettingsActivity : AppCompatActivity() {
+class DisplaySettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDisplaySettingsBinding
     private lateinit var sharedPreferences: SharedPreferences
@@ -91,7 +90,6 @@ class DisplaySettingsActivity : AppCompatActivity() {
                     // 内部ストレージのファイルパスを保存
                     saveSkinUri("file://${outputFile.absolutePath}")
                     updateSkinDisplay()
-                    applySkinBackground()
                     Toast.makeText(this, "背景画像を設定しました", Toast.LENGTH_SHORT).show()
                     
                     Log.d("DisplaySettings", "Image copied to internal storage: ${outputFile.absolutePath}")
@@ -123,7 +121,6 @@ class DisplaySettingsActivity : AppCompatActivity() {
         applySizeSettings()
         updateSkinDisplay()
         updateOpacityDisplay()
-        applySkinBackground()
     }
     
     private fun applyBackgroundColor() {
@@ -333,7 +330,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
                 if (fromUser) {
                     binding.textSkinOpacity.text = "${progress}%"
                     saveSkinOpacity(progress)
-                    applySkinBackground()
+                    updateBackgroundOpacity()
                 }
             }
             
@@ -425,34 +422,4 @@ class DisplaySettingsActivity : AppCompatActivity() {
         binding.seekBarSkinOpacity.progress = opacity
     }
     
-    private fun applySkinBackground() {
-        val skinUri = ThemeHelper.getSkinUri(this)
-        val opacity = ThemeHelper.getSkinOpacity(this)
-        
-        Log.d("DisplaySettings", "applySkinBackground - skinUri: $skinUri, opacity: $opacity")
-        
-        if (skinUri != null && skinUri.startsWith("file://")) {
-            val file = java.io.File(skinUri.removePrefix("file://"))
-            if (file.exists()) {
-                Log.d("DisplaySettings", "Loading image from file: ${file.absolutePath}")
-                
-                // 最前面のImageViewに設定
-                Glide.with(this)
-                    .load(file)
-                    .into(binding.debugImageBackground)
-                
-                val alpha = opacity / 100f
-                binding.debugImageBackground.alpha = alpha
-                binding.debugImageBackground.visibility = android.view.View.VISIBLE
-                
-                Log.d("DisplaySettings", "Background image set to foreground ImageView with opacity: $opacity%")
-            } else {
-                Log.e("DisplaySettings", "Background image file not found")
-                binding.debugImageBackground.visibility = android.view.View.GONE
-            }
-        } else {
-            Log.d("DisplaySettings", "No background image set")
-            binding.debugImageBackground.visibility = android.view.View.GONE
-        }
-    }
 }
