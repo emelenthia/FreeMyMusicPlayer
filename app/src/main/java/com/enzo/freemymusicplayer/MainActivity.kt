@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -17,6 +19,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.enzo.freemymusicplayer.controller.MusicPlayerController
 import com.enzo.freemymusicplayer.databinding.ActivityMainBinding
 import com.enzo.freemymusicplayer.adapter.SongAdapter
@@ -178,7 +183,10 @@ class MainActivity : AppCompatActivity() {
     
     private fun checkAndRequestPermissions() {
         val permissions = if (Build.VERSION.SDK_INT >= 33) {
-            arrayOf(Manifest.permission.READ_MEDIA_AUDIO)
+            arrayOf(
+                Manifest.permission.READ_MEDIA_AUDIO,
+                Manifest.permission.READ_MEDIA_IMAGES
+            )
         } else {
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
@@ -367,12 +375,13 @@ class MainActivity : AppCompatActivity() {
         binding.textStatus.setTextColor(textColorForLighter)
         binding.textStatus.textSize = displaySize.statusTextSize
         
-        // RecyclerViewの背景を少し暗く設定（再生領域との区別のため）
-        val listBackgroundColor = androidx.core.graphics.ColorUtils.blendARGB(backgroundColor, android.graphics.Color.BLACK, 0.05f)
-        binding.recyclerViewSongs.setBackgroundColor(listBackgroundColor)
+        // RecyclerViewの背景色設定はapplySkinBackground()内で行うため、ここでは削除
         
         // アダプターを更新してテーマカラーを反映
         browserAdapter.notifyDataSetChanged()
+        
+        // 背景画像を適用
+        applySkinBackground()
     }
 
     override fun onResume() {
@@ -397,6 +406,44 @@ class MainActivity : AppCompatActivity() {
             binding.textCurrentSong.layoutParams = layoutParams
             binding.textCurrentSong.gravity = android.view.Gravity.CENTER
         }
+    }
+
+    private fun applySkinBackground() {
+        val skinUri = ThemeHelper.getSkinUri(this)
+        val opacity = ThemeHelper.getSkinOpacity(this)
+        
+        Log.d("MainActivity", "applySkinBackground - skinUri: $skinUri, opacity: $opacity")
+        
+        if (skinUri != null && skinUri.startsWith("file://")) {
+            val file = java.io.File(skinUri.removePrefix("file://"))
+            if (file.exists()) {
+                Log.d("MainActivity", "Loading image from file: ${file.absolutePath}")
+                
+                // Glideでシンプルに背景を設定
+                val alpha = (opacity * 2.55f).toInt()
+                
+                // デバッグ用：最前面のImageViewに設定
+                Glide.with(this)
+                    .load(file)
+                    .into(binding.debugImageBackground)
+                
+                binding.debugImageBackground.alpha = alpha / 255f
+                binding.debugImageBackground.visibility = android.view.View.VISIBLE
+                
+                Log.d("MainActivity", "Debug: Background image set to foreground ImageView with alpha: $alpha")
+            } else {
+                Log.e("MainActivity", "Background image file not found")
+                binding.debugImageBackground.visibility = android.view.View.GONE
+            }
+        } else {
+            Log.d("MainActivity", "No background image set")
+            binding.debugImageBackground.visibility = android.view.View.GONE
+        }
+        
+        // RecyclerViewの背景色を設定
+        val backgroundColor = ThemeHelper.getBackgroundColor(this)
+        val listBackgroundColor = androidx.core.graphics.ColorUtils.blendARGB(backgroundColor, android.graphics.Color.BLACK, 0.05f)
+        binding.recyclerViewSongs.setBackgroundColor(listBackgroundColor)
     }
 
     override fun onDestroy() {

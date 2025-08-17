@@ -122,6 +122,16 @@ object ThemeHelper {
         return sharedPreferences.getBoolean(KEY_SHOW_ARTIST, true)
     }
     
+    fun getSkinUri(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getString("skin_uri", null)
+    }
+    
+    fun getSkinOpacity(context: Context): Int {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getInt("skin_opacity", 50)
+    }
+    
     enum class DisplaySize(
         val statusTextSize: Float,
         val songTitleSize: Float,

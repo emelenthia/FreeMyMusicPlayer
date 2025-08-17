@@ -5,6 +5,18 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- デバッグ用：背景画像 -->
+    <ImageView
+        android:id="@+id/debugImageBackground"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
@@ -104,6 +116,121 @@
                 android:text="アーティスト名を表示"
                 android:textColor="#000000"
                 android:checked="true"
+                android:layout_marginBottom="16dp" />
+
+            <!-- スキン設定 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="スキン設定"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="背景画像"
+                    android:textSize="16sp"
+                    android:textColor="#000000" />
+
+                <Button
+                    android:id="@+id/buttonSelectSkin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="画像を選択"
+                    android:textSize="14sp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="現在の設定"
+                    android:textSize="14sp"
+                    android:textColor="#666666" />
+
+                <TextView
+                    android:id="@+id/textCurrentSkin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="なし"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:maxWidth="120dp" />
+
+            </LinearLayout>
+
+            <!-- 透明度設定 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="背景の濃さ"
+                    android:textSize="16sp"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:id="@+id/textSkinOpacity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="50%"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:minWidth="40dp"
+                    android:gravity="end" />
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekBarSkinOpacity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="50"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/buttonClearSkin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="背景画像をクリア"
+                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:layout_marginBottom="16dp" />
 
         </LinearLayout>

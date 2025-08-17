@@ -1,15 +1,21 @@
 package com.enzo.freemymusicplayer
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.GridLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.enzo.freemymusicplayer.databinding.ActivityDisplaySettingsBinding
 
 class DisplaySettingsActivity : AppCompatActivity() {
@@ -46,6 +52,58 @@ class DisplaySettingsActivity : AppCompatActivity() {
         const val KEY_THEME_COLOR = "theme_color"
         const val KEY_SIZE_SETTING = "size_setting"
         const val KEY_SHOW_ARTIST = "show_artist"
+        const val KEY_SKIN_URI = "skin_uri"
+        const val KEY_SKIN_OPACITY = "skin_opacity"
+    }
+    
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let { selectedUri ->
+            Log.d("DisplaySettings", "Selected URI: $selectedUri")
+            
+            // 古い背景画像ファイルを削除
+            val oldSkinUri = sharedPreferences.getString(KEY_SKIN_URI, null)
+            if (oldSkinUri != null && oldSkinUri.startsWith("file://")) {
+                try {
+                    val oldFile = java.io.File(oldSkinUri.removePrefix("file://"))
+                    if (oldFile.exists()) {
+                        oldFile.delete()
+                        Log.d("DisplaySettings", "Deleted old skin file: ${oldFile.absolutePath}")
+                    }
+                } catch (e: Exception) {
+                    Log.w("DisplaySettings", "Failed to delete old skin file", e)
+                }
+            }
+            
+            // 画像をアプリの内部ストレージにコピー
+            try {
+                val inputStream = contentResolver.openInputStream(selectedUri)
+                if (inputStream != null) {
+                    val fileName = "skin_background_${System.currentTimeMillis()}.jpg"
+                    val outputFile = java.io.File(filesDir, fileName)
+                    val outputStream = java.io.FileOutputStream(outputFile)
+                    
+                    inputStream.copyTo(outputStream)
+                    inputStream.close()
+                    outputStream.close()
+                    
+                    // 内部ストレージのファイルパスを保存
+                    saveSkinUri("file://${outputFile.absolutePath}")
+                    updateSkinDisplay()
+                    applySkinBackground()
+                    Toast.makeText(this, "背景画像を設定しました", Toast.LENGTH_SHORT).show()
+                    
+                    Log.d("DisplaySettings", "Image copied to internal storage: ${outputFile.absolutePath}")
+                } else {
+                    Log.e("DisplaySettings", "Failed to open input stream")
+                    Toast.makeText(this, "画像の読み込みに失敗しました", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("DisplaySettings", "Failed to copy image", e)
+                Toast.makeText(this, "画像の保存に失敗しました", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,9 +117,13 @@ class DisplaySettingsActivity : AppCompatActivity() {
         setupColorGrid()
         setupSizeSettings()
         setupArtistSettings()
+        setupSkinSettings()
         applyThemeColor()
         applyBackgroundColor()
         applySizeSettings()
+        updateSkinDisplay()
+        updateOpacityDisplay()
+        applySkinBackground()
     }
     
     private fun applyBackgroundColor() {
@@ -158,6 +220,8 @@ class DisplaySettingsActivity : AppCompatActivity() {
         binding.radioGroupSize.check(savedSizeId)
         val showArtist = sharedPreferences.getBoolean(KEY_SHOW_ARTIST, true)
         binding.checkBoxShowArtist.isChecked = showArtist
+        val skinOpacity = sharedPreferences.getInt(KEY_SKIN_OPACITY, 50)
+        binding.seekBarSkinOpacity.progress = skinOpacity
     }
     
     private fun selectColor(index: Int) {
@@ -253,5 +317,142 @@ class DisplaySettingsActivity : AppCompatActivity() {
         sharedPreferences.edit()
             .putBoolean(KEY_SHOW_ARTIST, showArtist)
             .apply()
+    }
+    
+    private fun setupSkinSettings() {
+        binding.buttonSelectSkin.setOnClickListener {
+            imagePickerLauncher.launch("image/*")
+        }
+        
+        binding.buttonClearSkin.setOnClickListener {
+            clearSkin()
+        }
+        
+        binding.seekBarSkinOpacity.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    binding.textSkinOpacity.text = "${progress}%"
+                    saveSkinOpacity(progress)
+                    applySkinBackground()
+                }
+            }
+            
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+        })
+    }
+    
+    private fun saveSkinUri(uriString: String) {
+        sharedPreferences.edit()
+            .putString(KEY_SKIN_URI, uriString)
+            .apply()
+    }
+    
+    private fun clearSkin() {
+        // 古い背景画像ファイルを削除
+        val oldSkinUri = sharedPreferences.getString(KEY_SKIN_URI, null)
+        if (oldSkinUri != null && oldSkinUri.startsWith("file://")) {
+            try {
+                val file = java.io.File(oldSkinUri.removePrefix("file://"))
+                if (file.exists()) {
+                    file.delete()
+                    Log.d("DisplaySettings", "Deleted old skin file: ${file.absolutePath}")
+                }
+            } catch (e: Exception) {
+                Log.w("DisplaySettings", "Failed to delete old skin file", e)
+            }
+        }
+        
+        sharedPreferences.edit()
+            .remove(KEY_SKIN_URI)
+            .apply()
+        updateSkinDisplay()
+        applySkinBackground()
+        Toast.makeText(this, "背景画像をクリアしました", Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun updateSkinDisplay() {
+        val skinUri = sharedPreferences.getString(KEY_SKIN_URI, null)
+        if (skinUri != null) {
+            if (skinUri.startsWith("file://")) {
+                // 内部ストレージのファイル
+                val file = java.io.File(skinUri.removePrefix("file://"))
+                binding.textCurrentSkin.text = if (file.exists()) file.name else "ファイルが見つかりません"
+            } else {
+                // 従来のURI
+                try {
+                    val uri = Uri.parse(skinUri)
+                    val fileName = getFileName(uri)
+                    binding.textCurrentSkin.text = fileName ?: "画像が設定されています"
+                } catch (e: Exception) {
+                    binding.textCurrentSkin.text = "エラー"
+                }
+            }
+        } else {
+            binding.textCurrentSkin.text = "なし"
+        }
+    }
+    
+    private fun getFileName(uri: Uri): String? {
+        return try {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val nameIndex = it.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
+                    if (nameIndex >= 0) {
+                        it.getString(nameIndex)
+                    } else {
+                        uri.lastPathSegment
+                    }
+                } else {
+                    uri.lastPathSegment
+                }
+            }
+        } catch (e: Exception) {
+            uri.lastPathSegment
+        }
+    }
+    
+    private fun saveSkinOpacity(opacity: Int) {
+        sharedPreferences.edit()
+            .putInt(KEY_SKIN_OPACITY, opacity)
+            .apply()
+    }
+    
+    private fun updateOpacityDisplay() {
+        val opacity = sharedPreferences.getInt(KEY_SKIN_OPACITY, 50)
+        binding.textSkinOpacity.text = "${opacity}%"
+        binding.seekBarSkinOpacity.progress = opacity
+    }
+    
+    private fun applySkinBackground() {
+        val skinUri = ThemeHelper.getSkinUri(this)
+        val opacity = ThemeHelper.getSkinOpacity(this)
+        
+        Log.d("DisplaySettings", "applySkinBackground - skinUri: $skinUri, opacity: $opacity")
+        
+        if (skinUri != null && skinUri.startsWith("file://")) {
+            val file = java.io.File(skinUri.removePrefix("file://"))
+            if (file.exists()) {
+                Log.d("DisplaySettings", "Loading image from file: ${file.absolutePath}")
+                
+                // 最前面のImageViewに設定
+                Glide.with(this)
+                    .load(file)
+                    .into(binding.debugImageBackground)
+                
+                val alpha = opacity / 100f
+                binding.debugImageBackground.alpha = alpha
+                binding.debugImageBackground.visibility = android.view.View.VISIBLE
+                
+                Log.d("DisplaySettings", "Background image set to foreground ImageView with opacity: $opacity%")
+            } else {
+                Log.e("DisplaySettings", "Background image file not found")
+                binding.debugImageBackground.visibility = android.view.View.GONE
+            }
+        } else {
+            Log.d("DisplaySettings", "No background image set")
+            binding.debugImageBackground.visibility = android.view.View.GONE
+        }
     }
 }

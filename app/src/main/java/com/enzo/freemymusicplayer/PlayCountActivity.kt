@@ -1,9 +1,11 @@
 package com.enzo.freemymusicplayer
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.bumptech.glide.Glide
 import com.enzo.freemymusicplayer.databinding.ActivityPlayCountBinding
 import com.enzo.freemymusicplayer.fragment.AllSongsFragment
 import com.enzo.freemymusicplayer.fragment.RankingFragment
@@ -22,6 +24,7 @@ class PlayCountActivity : AppCompatActivity() {
         setupViewPager()
         ThemeHelper.applyTheme(this)
         applyThemeColors()
+        applySkinBackground()
     }
 
     private fun setupToolbar() {
@@ -129,6 +132,7 @@ class PlayCountActivity : AppCompatActivity() {
         super.onResume()
         applyThemeToActionBar()
         applyThemeColors()
+        applySkinBackground()
     }
     
     private fun applyThemeToActionBar() {
@@ -165,6 +169,34 @@ class PlayCountActivity : AppCompatActivity() {
                 android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             it.title = titleSpan
+        }
+    }
+    
+    private fun applySkinBackground() {
+        val skinUri = ThemeHelper.getSkinUri(this)
+        val opacity = ThemeHelper.getSkinOpacity(this)
+        
+        Log.d("PlayCountActivity", "applySkinBackground - skinUri: $skinUri, opacity: $opacity")
+        
+        if (skinUri != null && skinUri.startsWith("file://")) {
+            val file = java.io.File(skinUri.removePrefix("file://"))
+            if (file.exists()) {
+                Log.d("PlayCountActivity", "Loading image from file: ${file.absolutePath}")
+                
+                Glide.with(this)
+                    .load(file)
+                    .into(binding.debugImageBackground)
+                
+                val alpha = opacity / 100f
+                binding.debugImageBackground.alpha = alpha
+                binding.debugImageBackground.visibility = android.view.View.VISIBLE
+                
+                Log.d("PlayCountActivity", "Background image set with opacity: $opacity%")
+            } else {
+                binding.debugImageBackground.visibility = android.view.View.GONE
+            }
+        } else {
+            binding.debugImageBackground.visibility = android.view.View.GONE
         }
     }
 
