@@ -1,9 +1,14 @@
 package com.enzo.freemymusicplayer
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.OnBackPressedCallback
@@ -54,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         setupMusicController()
         setupBackPressedHandler()
         checkAndRequestPermissions()
+        ThemeHelper.applyTheme(this)
     }
     
     private fun setupRecyclerView() {
@@ -138,6 +144,7 @@ class MainActivity : AppCompatActivity() {
         binding.buttonRepeat.setOnClickListener {
             musicController.toggleRepeatMode()
         }
+        
         
         binding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
@@ -274,6 +281,61 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                Log.d("MainActivity", "Settings menu clicked")
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    
+    private fun applyThemeColors() {
+        val themeColor = ThemeHelper.getThemeColor(this)
+        val lighterColor = ThemeHelper.getLighterThemeColor(this)
+        val backgroundColor = ThemeHelper.getBackgroundColor(this)
+        val textColorForLighter = ThemeHelper.getContrastTextColor(this)
+        
+        // プレイヤーコントロールの文字色（濃いテーマカラーに対するコントラスト）
+        val themeColorLuminance = androidx.core.graphics.ColorUtils.calculateLuminance(themeColor)
+        val playerTextColor = if (themeColorLuminance > 0.5) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+        
+        // 全体の背景色を適用
+        binding.root.setBackgroundColor(backgroundColor)
+        
+        // プレイヤーコントロール部分にテーマカラーを適用
+        binding.playerControls.background = ColorDrawable(themeColor)
+        
+        // 曲情報の文字色を適用（プレイヤーコントロール背景に対するコントラスト）
+        binding.textCurrentSong.setTextColor(playerTextColor)
+        binding.textCurrentArtist.setTextColor(playerTextColor)
+        
+        // topBarに薄いテーマカラーを適用
+        binding.topBar.background = ColorDrawable(lighterColor)
+        
+        // ステータステキストの色を適用（薄いテーマカラーに対するコントラスト）
+        binding.textStatus.setTextColor(textColorForLighter)
+        
+        // RecyclerViewの背景を明示的に透明に設定
+        binding.recyclerViewSongs.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        
+        // アダプターを更新してテーマカラーを反映
+        browserAdapter.notifyDataSetChanged()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ThemeHelper.applyTheme(this)
+        applyThemeColors()
     }
 
     override fun onDestroy() {

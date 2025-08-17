@@ -1,8 +1,10 @@
 package com.enzo.freemymusicplayer.adapter
 
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.enzo.freemymusicplayer.ThemeHelper
 import com.enzo.freemymusicplayer.databinding.ItemBrowserBinding
 import com.enzo.freemymusicplayer.model.BrowserItem
 
@@ -17,8 +19,18 @@ class BrowserAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: BrowserItem, position: Int) {
+            val context = binding.root.context
+            val lighterColor = ThemeHelper.getLighterThemeColor(context)
+            val textColor = ThemeHelper.getContrastTextColor(context)
+            
             binding.textItemName.text = item.getDisplayName()
             binding.textItemInfo.text = item.getDisplayInfo()
+            
+            // テーマカラーを適用（CardViewの背景色を設定）
+            binding.root.setCardBackgroundColor(lighterColor)
+            binding.root.elevation = 0f
+            binding.textItemName.setTextColor(textColor)
+            binding.textItemInfo.setTextColor(textColor)
             
             // アイコンを設定
             val iconResource = when (item.type) {
