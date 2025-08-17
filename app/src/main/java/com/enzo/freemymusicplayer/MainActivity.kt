@@ -304,6 +304,7 @@ class MainActivity : AppCompatActivity() {
         val lighterColor = ThemeHelper.getLighterThemeColor(this)
         val backgroundColor = ThemeHelper.getBackgroundColor(this)
         val textColorForLighter = ThemeHelper.getContrastTextColor(this)
+        val displaySize = ThemeHelper.getDisplaySize(this)
         
         // プレイヤーコントロールの文字色（濃いテーマカラーに対するコントラスト）
         val themeColorLuminance = androidx.core.graphics.ColorUtils.calculateLuminance(themeColor)
@@ -315,15 +316,18 @@ class MainActivity : AppCompatActivity() {
         // プレイヤーコントロール部分にテーマカラーを適用
         binding.playerControls.background = ColorDrawable(themeColor)
         
-        // 曲情報の文字色を適用（プレイヤーコントロール背景に対するコントラスト）
+        // 曲情報の文字色とサイズを適用（プレイヤーコントロール背景に対するコントラスト）
         binding.textCurrentSong.setTextColor(playerTextColor)
+        binding.textCurrentSong.textSize = displaySize.playerTitleSize
         binding.textCurrentArtist.setTextColor(playerTextColor)
+        binding.textCurrentArtist.textSize = displaySize.playerArtistSize
         
         // topBarに薄いテーマカラーを適用
         binding.topBar.background = ColorDrawable(lighterColor)
         
-        // ステータステキストの色を適用（薄いテーマカラーに対するコントラスト）
+        // ステータステキストの色とサイズを適用（薄いテーマカラーに対するコントラスト）
         binding.textStatus.setTextColor(textColorForLighter)
+        binding.textStatus.textSize = displaySize.statusTextSize
         
         // RecyclerViewの背景を明示的に透明に設定
         binding.recyclerViewSongs.setBackgroundColor(android.graphics.Color.TRANSPARENT)

@@ -22,6 +22,7 @@ class BrowserAdapter(
             val context = binding.root.context
             val lighterColor = ThemeHelper.getLighterThemeColor(context)
             val textColor = ThemeHelper.getContrastTextColor(context)
+            val displaySize = ThemeHelper.getDisplaySize(context)
             
             binding.textItemName.text = item.getDisplayName()
             binding.textItemInfo.text = item.getDisplayInfo()
@@ -31,6 +32,23 @@ class BrowserAdapter(
             binding.root.elevation = 0f
             binding.textItemName.setTextColor(textColor)
             binding.textItemInfo.setTextColor(textColor)
+            
+            // サイズ設定を適用
+            binding.textItemName.textSize = displaySize.songTitleSize
+            binding.textItemInfo.textSize = displaySize.songArtistSize
+            
+            // アイコンサイズを適用（dpをpxに変換）
+            val density = context.resources.displayMetrics.density
+            val iconSizePx = (displaySize.iconSize * density).toInt()
+            val paddingPx = (displaySize.itemPadding * density).toInt()
+            
+            val iconLayoutParams = binding.imageIcon.layoutParams
+            iconLayoutParams.width = iconSizePx
+            iconLayoutParams.height = iconSizePx
+            binding.imageIcon.layoutParams = iconLayoutParams
+            
+            // LinearLayoutのパディングを調整
+            binding.linearLayoutContent.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
             
             // アイコンを設定
             val iconResource = when (item.type) {

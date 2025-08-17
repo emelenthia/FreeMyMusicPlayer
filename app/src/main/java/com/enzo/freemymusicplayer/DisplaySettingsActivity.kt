@@ -59,6 +59,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
         setupSizeSettings()
         applyThemeColor()
         applyBackgroundColor()
+        applySizeSettings()
     }
     
     private fun applyBackgroundColor() {
@@ -116,7 +117,36 @@ class DisplaySettingsActivity : AppCompatActivity() {
             }
             
             saveSizeSetting(checkedId)
-            Toast.makeText(this, "${sizeText}サイズに設定しました", Toast.LENGTH_SHORT).show()
+            applySizeSettings()
+        }
+    }
+    
+    private fun applySizeSettings() {
+        val displaySize = ThemeHelper.getDisplaySize(this)
+        
+        // ScrollView内のTextViewを見つけて更新
+        val scrollView = binding.scrollView
+        updateTextSizesInViewGroup(scrollView, displaySize)
+    }
+    
+    private fun updateTextSizesInViewGroup(viewGroup: android.view.ViewGroup?, displaySize: ThemeHelper.DisplaySize) {
+        if (viewGroup == null) return
+        
+        for (i in 0 until viewGroup.childCount) {
+            val child = viewGroup.getChildAt(i)
+            when (child) {
+                is android.widget.TextView -> {
+                    // テキストの種類に応じてサイズを設定
+                    when {
+                        child.textSize > 50f -> child.textSize = displaySize.playerTitleSize // タイトル
+                        child.textSize > 30f -> child.textSize = displaySize.songTitleSize // 中見出し
+                        else -> child.textSize = displaySize.songArtistSize // 通常テキスト
+                    }
+                }
+                is android.view.ViewGroup -> {
+                    updateTextSizesInViewGroup(child, displaySize)
+                }
+            }
         }
     }
     

@@ -2,6 +2,7 @@ package com.enzo.freemymusicplayer
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.TypedValue
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.enzo.freemymusicplayer.databinding.ActivitySettingsBinding
@@ -63,6 +64,25 @@ class SettingsActivity : AppCompatActivity() {
     
     private fun applyThemeColors() {
         val backgroundColor = ThemeHelper.getBackgroundColor(this)
+        val displaySize = ThemeHelper.getDisplaySize(this)
+        val textColor = ThemeHelper.getContrastTextColor(this)
+        
         binding.root.setBackgroundColor(backgroundColor)
+        
+        // 各設定項目のTextViewのサイズと色を適用
+        applySizeToLinearLayout(binding.buttonDisplaySettings, displaySize, textColor)
+        applySizeToLinearLayout(binding.buttonPlaybackSettings, displaySize, textColor)
+        applySizeToLinearLayout(binding.buttonAudioSettings, displaySize, textColor)
+        applySizeToLinearLayout(binding.buttonOtherSettings, displaySize, textColor)
+    }
+    
+    private fun applySizeToLinearLayout(layout: android.widget.LinearLayout, displaySize: ThemeHelper.DisplaySize, textColor: Int) {
+        for (i in 0 until layout.childCount) {
+            val child = layout.getChildAt(i)
+            if (child is android.widget.TextView) {
+                child.setTextSize(TypedValue.COMPLEX_UNIT_SP, displaySize.songTitleSize)
+                child.setTextColor(textColor)
+            }
+        }
     }
 }

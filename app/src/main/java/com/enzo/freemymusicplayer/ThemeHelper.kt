@@ -11,6 +11,7 @@ object ThemeHelper {
     
     private const val PREF_NAME = "display_settings"
     private const val KEY_THEME_COLOR = "theme_color"
+    private const val KEY_SIZE_SETTING = "size_setting"
     
     private val themeColors = arrayOf(
         "#FF69B4", // ピンク（現在のlight_pink）
@@ -67,11 +68,28 @@ object ThemeHelper {
         return if (luminance > 0.5) Color.BLACK else Color.WHITE
     }
     
-    fun applyThemeToViews(context: Context) {
-        val themeColor = getThemeColor(context)
-        val lighterColor = getLighterThemeColor(context)
-        val textColor = getContrastTextColor(context)
+    fun getDisplaySize(context: Context): DisplaySize {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val sizeId = sharedPreferences.getInt(KEY_SIZE_SETTING, com.enzo.freemymusicplayer.R.id.radioMediumSize)
         
-        // ここで各Viewに色を適用する処理を実装
+        return when (sizeId) {
+            com.enzo.freemymusicplayer.R.id.radioSmallSize -> DisplaySize.SMALL
+            com.enzo.freemymusicplayer.R.id.radioLargeSize -> DisplaySize.LARGE
+            else -> DisplaySize.MEDIUM
+        }
+    }
+    
+    enum class DisplaySize(
+        val statusTextSize: Float,
+        val songTitleSize: Float,
+        val songArtistSize: Float,
+        val playerTitleSize: Float,
+        val playerArtistSize: Float,
+        val itemPadding: Int,
+        val iconSize: Int
+    ) {
+        SMALL(14f, 14f, 12f, 16f, 12f, 12, 40),
+        MEDIUM(16f, 16f, 14f, 18f, 14f, 16, 48),
+        LARGE(18f, 18f, 16f, 20f, 16f, 20, 56)
     }
 }
