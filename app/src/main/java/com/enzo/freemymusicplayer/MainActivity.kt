@@ -160,6 +160,9 @@ class MainActivity : AppCompatActivity() {
             musicController.toggleRepeatMode()
         }
         
+        binding.buttonRestart.setOnClickListener {
+            musicController.seekTo(0L)
+        }
         
         binding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {

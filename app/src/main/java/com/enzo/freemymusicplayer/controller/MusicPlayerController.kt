@@ -65,6 +65,10 @@ class MusicPlayerController(private val context: Context) {
                 }
             }
             
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updatePlayerState()
+            }
+            
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
                     handleTrackEnded()
@@ -159,10 +163,12 @@ class MusicPlayerController(private val context: Context) {
     
     fun play() {
         mediaController?.play()
+        updatePlayerState()
     }
     
     fun pause() {
         mediaController?.pause()
+        updatePlayerState()
     }
     
     fun stop() {
@@ -334,11 +340,11 @@ class MusicPlayerController(private val context: Context) {
         val controller = mediaController ?: return
         val currentState = _playerState.value ?: PlayerState()
         
-        val playbackState = when (controller.playbackState) {
-            Player.STATE_IDLE -> PlaybackState.IDLE
-            Player.STATE_BUFFERING -> PlaybackState.BUFFERING
-            Player.STATE_READY -> if (controller.playWhenReady) PlaybackState.PLAYING else PlaybackState.PAUSED
-            Player.STATE_ENDED -> PlaybackState.STOPPED
+        val playbackState = when {
+            controller.playbackState == Player.STATE_READY && controller.isPlaying -> PlaybackState.PLAYING
+            controller.playbackState == Player.STATE_READY && !controller.isPlaying -> PlaybackState.PAUSED
+            controller.playbackState == Player.STATE_BUFFERING -> PlaybackState.BUFFERING
+            controller.playbackState == Player.STATE_ENDED -> PlaybackState.STOPPED
             else -> PlaybackState.IDLE
         }
         
