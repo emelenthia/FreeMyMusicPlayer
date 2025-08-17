@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/light_pink">
 
     <TextView
         android:id="@+id/textStatus"
@@ -62,8 +63,34 @@
             android:id="@+id/seekBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
 
+        <!-- シャッフル・リピートボタン -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="8dp">
+
+            <ImageButton
+                android:id="@+id/buttonShuffle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_shuffle"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="24dp" />
+
+            <ImageButton
+                android:id="@+id/buttonRepeat"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_menu_rotate"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+        </LinearLayout>
+
+        <!-- 再生制御ボタン -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

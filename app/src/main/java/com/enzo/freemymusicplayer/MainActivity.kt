@@ -87,6 +87,25 @@ class MainActivity : AppCompatActivity() {
                     android.R.drawable.ic_media_play
             )
             
+            // シャッフルボタンの状態を更新
+            binding.buttonShuffle.alpha = if (playerState.isShuffleEnabled) 1.0f else 0.5f
+            
+            // リピートボタンの状態を更新
+            when (playerState.repeatMode) {
+                com.enzo.freemymusicplayer.model.RepeatMode.NONE -> {
+                    binding.buttonRepeat.alpha = 0.5f
+                    binding.buttonRepeat.setImageResource(android.R.drawable.ic_menu_rotate)
+                }
+                com.enzo.freemymusicplayer.model.RepeatMode.ALL -> {
+                    binding.buttonRepeat.alpha = 1.0f
+                    binding.buttonRepeat.setImageResource(android.R.drawable.ic_menu_rotate)
+                }
+                com.enzo.freemymusicplayer.model.RepeatMode.ONE -> {
+                    binding.buttonRepeat.alpha = 1.0f
+                    binding.buttonRepeat.setImageResource(android.R.drawable.ic_menu_revert)
+                }
+            }
+            
             binding.seekBar.max = (playerState.duration / 1000).toInt()
             binding.seekBar.progress = (playerState.position / 1000).toInt()
         }
@@ -110,6 +129,14 @@ class MainActivity : AppCompatActivity() {
         
         binding.buttonNext.setOnClickListener {
             musicController.seekToNext()
+        }
+        
+        binding.buttonShuffle.setOnClickListener {
+            musicController.toggleShuffle()
+        }
+        
+        binding.buttonRepeat.setOnClickListener {
+            musicController.toggleRepeatMode()
         }
         
         binding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
