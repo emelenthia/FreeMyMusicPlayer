@@ -25,7 +25,42 @@ class BrowserAdapter(
             val displaySize = ThemeHelper.getDisplaySize(context)
             
             binding.textItemName.text = item.getDisplayName()
-            binding.textItemInfo.text = item.getDisplayInfo()
+            
+            // アイコンサイズを適用（dpをpxに変換）
+            val density = context.resources.displayMetrics.density
+            val iconSizePx = (displaySize.iconSize * density).toInt()
+            val paddingPx = (displaySize.itemPadding * density).toInt()
+            
+            val showArtist = ThemeHelper.getShowArtist(context)
+            
+            // 戻るボタンは常に小さくコンパクトに
+            if (item.type == BrowserItem.ItemType.BACK_BUTTON) {
+                binding.textItemInfo.visibility = android.view.View.GONE
+                val backButtonPaddingPx = (8 * density).toInt()
+                binding.linearLayoutContent.setPadding(paddingPx, backButtonPaddingPx, paddingPx, backButtonPaddingPx)
+                binding.textContainer.gravity = android.view.Gravity.CENTER_VERTICAL
+                val backButtonHeight = (40 * density).toInt()
+                binding.linearLayoutContent.minimumHeight = backButtonHeight
+            } else if (showArtist || item.type != BrowserItem.ItemType.SONG) {
+                binding.textItemInfo.text = item.getDisplayInfo()
+                binding.textItemInfo.visibility = android.view.View.VISIBLE
+                // アーティスト表示時は通常のパディング
+                binding.linearLayoutContent.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+                // テキストコンテナを上揃えに（2行表示用）
+                binding.textContainer.gravity = android.view.Gravity.TOP
+                // LinearLayoutの高さを通常に戻す
+                binding.linearLayoutContent.minimumHeight = 0
+            } else {
+                binding.textItemInfo.visibility = android.view.View.GONE
+                // アーティスト非表示時はパディングを大幅に縮小
+                val smallPaddingPx = (paddingPx * 0.5f).toInt()
+                binding.linearLayoutContent.setPadding(paddingPx, smallPaddingPx, paddingPx, smallPaddingPx)
+                // テキストコンテナを中央配置（1行表示用）
+                binding.textContainer.gravity = android.view.Gravity.CENTER_VERTICAL
+                // LinearLayoutの最小高さを設定してコンパクトに
+                val compactHeight = (48 * density).toInt()
+                binding.linearLayoutContent.minimumHeight = compactHeight
+            }
             
             // テーマカラーを適用（CardViewの背景色を設定）
             binding.root.setCardBackgroundColor(lighterColor)
@@ -37,18 +72,11 @@ class BrowserAdapter(
             binding.textItemName.textSize = displaySize.songTitleSize
             binding.textItemInfo.textSize = displaySize.songArtistSize
             
-            // アイコンサイズを適用（dpをpxに変換）
-            val density = context.resources.displayMetrics.density
-            val iconSizePx = (displaySize.iconSize * density).toInt()
-            val paddingPx = (displaySize.itemPadding * density).toInt()
-            
             val iconLayoutParams = binding.imageIcon.layoutParams
             iconLayoutParams.width = iconSizePx
             iconLayoutParams.height = iconSizePx
             binding.imageIcon.layoutParams = iconLayoutParams
             
-            // LinearLayoutのパディングを調整
-            binding.linearLayoutContent.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
             
             // アイコンを設定
             val iconResource = when (item.type) {

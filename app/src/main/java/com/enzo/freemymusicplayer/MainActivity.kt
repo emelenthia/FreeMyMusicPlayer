@@ -83,7 +83,17 @@ class MainActivity : AppCompatActivity() {
         musicController.playerState.observe(this) { playerState ->
             playerState.currentSong?.let { currentSong ->
                 binding.textCurrentSong.text = currentSong.getDisplayTitle()
-                binding.textCurrentArtist.text = currentSong.getDisplayArtist()
+                val showArtist = ThemeHelper.getShowArtist(this)
+                if (showArtist) {
+                    binding.textCurrentArtist.text = currentSong.getDisplayArtist()
+                    binding.textCurrentArtist.visibility = android.view.View.VISIBLE
+                    // 通常の位置
+                    adjustPlayerTextPosition(false)
+                } else {
+                    binding.textCurrentArtist.visibility = android.view.View.GONE
+                    // 中央配置
+                    adjustPlayerTextPosition(true)
+                }
             }
             
             binding.buttonPlay.setImageResource(
@@ -340,6 +350,24 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         ThemeHelper.applyTheme(this)
         applyThemeColors()
+    }
+
+    private fun adjustPlayerTextPosition(centerSong: Boolean) {
+        if (centerSong) {
+            // アーティスト非表示時：曲名を再生エリア上部とSeekBarの中間に配置
+            val layoutParams = binding.textCurrentSong.layoutParams as android.view.ViewGroup.MarginLayoutParams
+            layoutParams.topMargin = (8 * resources.displayMetrics.density).toInt()
+            layoutParams.bottomMargin = (24 * resources.displayMetrics.density).toInt()
+            binding.textCurrentSong.layoutParams = layoutParams
+            binding.textCurrentSong.gravity = android.view.Gravity.CENTER
+        } else {
+            // アーティスト表示時：通常の配置
+            val layoutParams = binding.textCurrentSong.layoutParams as android.view.ViewGroup.MarginLayoutParams
+            layoutParams.topMargin = 0
+            layoutParams.bottomMargin = (2 * resources.displayMetrics.density).toInt()
+            binding.textCurrentSong.layoutParams = layoutParams
+            binding.textCurrentSong.gravity = android.view.Gravity.CENTER
+        }
     }
 
     override fun onDestroy() {

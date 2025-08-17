@@ -45,6 +45,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
         const val PREF_NAME = "display_settings"
         const val KEY_THEME_COLOR = "theme_color"
         const val KEY_SIZE_SETTING = "size_setting"
+        const val KEY_SHOW_ARTIST = "show_artist"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,6 +58,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
         setupToolbar()
         setupColorGrid()
         setupSizeSettings()
+        setupArtistSettings()
         applyThemeColor()
         applyBackgroundColor()
         applySizeSettings()
@@ -154,6 +156,8 @@ class DisplaySettingsActivity : AppCompatActivity() {
         selectedColorIndex = sharedPreferences.getInt(KEY_THEME_COLOR, 0)
         val savedSizeId = sharedPreferences.getInt(KEY_SIZE_SETTING, R.id.radioMediumSize)
         binding.radioGroupSize.check(savedSizeId)
+        val showArtist = sharedPreferences.getBoolean(KEY_SHOW_ARTIST, true)
+        binding.checkBoxShowArtist.isChecked = showArtist
     }
     
     private fun selectColor(index: Int) {
@@ -202,5 +206,17 @@ class DisplaySettingsActivity : AppCompatActivity() {
         
         // ウィンドウのステータスバー色も変更
         window.statusBarColor = color
+    }
+    
+    private fun setupArtistSettings() {
+        binding.checkBoxShowArtist.setOnCheckedChangeListener { _, isChecked ->
+            saveArtistSetting(isChecked)
+        }
+    }
+    
+    private fun saveArtistSetting(showArtist: Boolean) {
+        sharedPreferences.edit()
+            .putBoolean(KEY_SHOW_ARTIST, showArtist)
+            .apply()
     }
 }

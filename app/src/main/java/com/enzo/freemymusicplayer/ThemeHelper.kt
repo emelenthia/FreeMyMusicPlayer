@@ -12,6 +12,7 @@ object ThemeHelper {
     private const val PREF_NAME = "display_settings"
     private const val KEY_THEME_COLOR = "theme_color"
     private const val KEY_SIZE_SETTING = "size_setting"
+    private const val KEY_SHOW_ARTIST = "show_artist"
     
     private val themeColors = arrayOf(
         "#FF69B4", // ピンク（現在のlight_pink）
@@ -77,6 +78,11 @@ object ThemeHelper {
             com.enzo.freemymusicplayer.R.id.radioLargeSize -> DisplaySize.LARGE
             else -> DisplaySize.MEDIUM
         }
+    }
+    
+    fun getShowArtist(context: Context): Boolean {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean(KEY_SHOW_ARTIST, true)
     }
     
     enum class DisplaySize(
