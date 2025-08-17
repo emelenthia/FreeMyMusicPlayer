@@ -197,15 +197,50 @@ class DisplaySettingsActivity : AppCompatActivity() {
         val colorHex = themeColors[selectedColorIndex]
         val color = Color.parseColor(colorHex)
         
+        val actionBarColor = if (colorHex == "#FFFFFF") {
+            // 白テーマの場合は曲一覧と同じ背景色
+            val backgroundColor = ThemeHelper.getBackgroundColor(this)
+            androidx.core.graphics.ColorUtils.blendARGB(backgroundColor, Color.BLACK, 0.05f)
+        } else {
+            color
+        }
+        
         // ActionBarの色を変更
         supportActionBar?.setBackgroundDrawable(
             GradientDrawable().apply {
-                setColor(color)
+                setColor(actionBarColor)
             }
         )
         
         // ウィンドウのステータスバー色も変更
-        window.statusBarColor = color
+        window.statusBarColor = actionBarColor
+        
+        // タイトル文字色を設定
+        val titleTextColor = if (colorHex == "#FFFFFF") {
+            Color.BLACK
+        } else {
+            Color.WHITE
+        }
+        
+        val actionBar = supportActionBar
+        actionBar?.let {
+            val titleSpan = android.text.SpannableString(it.title ?: "")
+            titleSpan.setSpan(
+                android.text.style.ForegroundColorSpan(titleTextColor),
+                0,
+                titleSpan.length,
+                android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            it.title = titleSpan
+        }
+        
+        // ActionBarのナビゲーションアイコン（戻るボタン）の色を設定
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(androidx.appcompat.R.id.action_bar)
+        toolbar?.let {
+            val iconColor = if (colorHex == "#FFFFFF") Color.BLACK else Color.WHITE
+            it.navigationIcon?.setTint(iconColor)
+            it.overflowIcon?.setTint(iconColor)
+        }
     }
     
     private fun setupArtistSettings() {

@@ -44,6 +44,43 @@ object ThemeHelper {
         
         // ステータスバーの色も変更
         activity.window.statusBarColor = color
+        
+        // タイトル文字色を設定（白テーマの場合は黒文字）
+        val titleTextColor = if (colorHex == "#FFFFFF") {
+            Color.BLACK
+        } else {
+            Color.WHITE
+        }
+        
+        // ActionBarのタイトル色を変更
+        val actionBar = activity.supportActionBar
+        actionBar?.let {
+            val titleSpan = android.text.SpannableString(it.title ?: "")
+            titleSpan.setSpan(
+                android.text.style.ForegroundColorSpan(titleTextColor),
+                0,
+                titleSpan.length,
+                android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            it.title = titleSpan
+        }
+        
+        // ActionBarのアイコン色を設定（戻るボタンなど）
+        activity.window.decorView.systemUiVisibility = if (colorHex == "#FFFFFF") {
+            // 白テーマの場合はダークアイコン
+            android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        } else {
+            // その他の場合はライトアイコン
+            0
+        }
+        
+        // ActionBarのナビゲーションアイコンとメニューアイコンの色を設定
+        val toolbar = activity.findViewById<androidx.appcompat.widget.Toolbar>(androidx.appcompat.R.id.action_bar)
+        toolbar?.let {
+            val iconColor = if (colorHex == "#FFFFFF") android.graphics.Color.BLACK else android.graphics.Color.WHITE
+            it.navigationIcon?.setTint(iconColor)
+            it.overflowIcon?.setTint(iconColor)
+        }
     }
     
     fun getThemeColor(context: Context): Int {

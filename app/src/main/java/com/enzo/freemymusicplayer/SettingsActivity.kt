@@ -49,6 +49,11 @@ class SettingsActivity : AppCompatActivity() {
             // TODO: 音質設定画面へ遷移
         }
 
+        // 再生回数
+        binding.buttonPlayCountSettings.setOnClickListener {
+            startActivity(Intent(this, PlayCountActivity::class.java))
+        }
+
         // その他設定
         binding.buttonOtherSettings.setOnClickListener {
             Toast.makeText(this, "その他設定画面を開きます", Toast.LENGTH_SHORT).show()
@@ -58,8 +63,45 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        ThemeHelper.applyTheme(this)
+        applyThemeToActionBar()
         applyThemeColors()
+    }
+    
+    private fun applyThemeToActionBar() {
+        val themeColor = ThemeHelper.getThemeColor(this)
+        val actionBarColor = if (themeColor == android.graphics.Color.WHITE) {
+            // 白テーマの場合は曲一覧と同じ背景色
+            val backgroundColor = ThemeHelper.getBackgroundColor(this)
+            androidx.core.graphics.ColorUtils.blendARGB(backgroundColor, android.graphics.Color.BLACK, 0.05f)
+        } else {
+            themeColor
+        }
+        
+        supportActionBar?.setBackgroundDrawable(
+            android.graphics.drawable.GradientDrawable().apply {
+                setColor(actionBarColor)
+            }
+        )
+        window.statusBarColor = actionBarColor
+        
+        // タイトル文字色を設定
+        val titleTextColor = if (themeColor == android.graphics.Color.WHITE) {
+            android.graphics.Color.BLACK
+        } else {
+            android.graphics.Color.WHITE
+        }
+        
+        val actionBar = supportActionBar
+        actionBar?.let {
+            val titleSpan = android.text.SpannableString(it.title ?: "")
+            titleSpan.setSpan(
+                android.text.style.ForegroundColorSpan(titleTextColor),
+                0,
+                titleSpan.length,
+                android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            it.title = titleSpan
+        }
     }
     
     private fun applyThemeColors() {
@@ -73,6 +115,7 @@ class SettingsActivity : AppCompatActivity() {
         applySizeToLinearLayout(binding.buttonDisplaySettings, displaySize, textColor)
         applySizeToLinearLayout(binding.buttonPlaybackSettings, displaySize, textColor)
         applySizeToLinearLayout(binding.buttonAudioSettings, displaySize, textColor)
+        applySizeToLinearLayout(binding.buttonPlayCountSettings, displaySize, textColor)
         applySizeToLinearLayout(binding.buttonOtherSettings, displaySize, textColor)
     }
     

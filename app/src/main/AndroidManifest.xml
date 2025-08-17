@@ -50,6 +50,16 @@
                 android:value=".SettingsActivity" />
         </activity>
 
+        <activity
+            android:name=".PlayCountActivity"
+            android:exported="false"
+            android:label="再生回数"
+            android:parentActivityName=".SettingsActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SettingsActivity" />
+        </activity>
+
         <service
             android:name=".service.MusicPlayerService"
             android:exported="false"

@@ -49,15 +49,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/textCurrentSong"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="曲が選択されていません"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="2dp" />
+            android:layout_marginBottom="2dp">
+
+            <TextView
+                android:id="@+id/textCurrentSong"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="曲が選択されていません"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/textPlayCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBottom="@id/textCurrentSong"
+                android:text=""
+                android:textSize="10sp"
+                android:alpha="0.7"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="2dp" />
+
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/textCurrentArtist"

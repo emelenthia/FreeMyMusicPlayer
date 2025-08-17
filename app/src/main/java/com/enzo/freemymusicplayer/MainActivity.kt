@@ -83,6 +83,11 @@ class MainActivity : AppCompatActivity() {
         musicController.playerState.observe(this) { playerState ->
             playerState.currentSong?.let { currentSong ->
                 binding.textCurrentSong.text = currentSong.getDisplayTitle()
+                
+                // 再生回数を表示
+                val playCount = musicController.getPlayCount(currentSong.id)
+                binding.textPlayCount.text = if (playCount > 0) "♪$playCount" else ""
+                
                 val showArtist = ThemeHelper.getShowArtist(this)
                 if (showArtist) {
                     binding.textCurrentArtist.text = currentSong.getDisplayArtist()
@@ -295,6 +300,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        
+        // メニューアイコンの色を設定
+        val themeColor = ThemeHelper.getThemeColor(this)
+        val iconColor = if (themeColor == android.graphics.Color.WHITE) {
+            android.graphics.Color.BLACK
+        } else {
+            android.graphics.Color.WHITE
+        }
+        
+        menu?.let {
+            for (i in 0 until it.size()) {
+                val menuItem = it.getItem(i)
+                menuItem.icon?.setTint(iconColor)
+            }
+        }
+        
         return true
     }
 
@@ -332,6 +353,10 @@ class MainActivity : AppCompatActivity() {
         binding.textCurrentArtist.setTextColor(playerTextColor)
         binding.textCurrentArtist.textSize = displaySize.playerArtistSize
         
+        // 再生回数の色とサイズを適用
+        binding.textPlayCount.setTextColor(playerTextColor)
+        binding.textPlayCount.textSize = displaySize.songArtistSize * 0.8f
+        
         // topBarに薄いテーマカラーを適用
         binding.topBar.background = ColorDrawable(lighterColor)
         
@@ -339,8 +364,9 @@ class MainActivity : AppCompatActivity() {
         binding.textStatus.setTextColor(textColorForLighter)
         binding.textStatus.textSize = displaySize.statusTextSize
         
-        // RecyclerViewの背景を明示的に透明に設定
-        binding.recyclerViewSongs.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        // RecyclerViewの背景を少し暗く設定（再生領域との区別のため）
+        val listBackgroundColor = androidx.core.graphics.ColorUtils.blendARGB(backgroundColor, android.graphics.Color.BLACK, 0.05f)
+        binding.recyclerViewSongs.setBackgroundColor(listBackgroundColor)
         
         // アダプターを更新してテーマカラーを反映
         browserAdapter.notifyDataSetChanged()
@@ -356,7 +382,7 @@ class MainActivity : AppCompatActivity() {
         if (centerSong) {
             // アーティスト非表示時：曲名を再生エリア上部とSeekBarの中間に配置
             val layoutParams = binding.textCurrentSong.layoutParams as android.view.ViewGroup.MarginLayoutParams
-            layoutParams.topMargin = (8 * resources.displayMetrics.density).toInt()
+            layoutParams.topMargin = (2 * resources.displayMetrics.density).toInt()
             layoutParams.bottomMargin = (24 * resources.displayMetrics.density).toInt()
             binding.textCurrentSong.layoutParams = layoutParams
             binding.textCurrentSong.gravity = android.view.Gravity.CENTER

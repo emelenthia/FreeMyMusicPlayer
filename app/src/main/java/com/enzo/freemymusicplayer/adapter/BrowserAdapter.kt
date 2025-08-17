@@ -23,6 +23,7 @@ class BrowserAdapter(
             val lighterColor = ThemeHelper.getLighterThemeColor(context)
             val textColor = ThemeHelper.getContrastTextColor(context)
             val displaySize = ThemeHelper.getDisplaySize(context)
+            val themeColor = ThemeHelper.getThemeColor(context)
             
             binding.textItemName.text = item.getDisplayName()
             
@@ -85,6 +86,16 @@ class BrowserAdapter(
                 BrowserItem.ItemType.SONG -> android.R.drawable.ic_media_play
             }
             binding.imageIcon.setImageResource(iconResource)
+            
+            // アイコンの背景色をテーマカラーベースで設定
+            val iconBackgroundColor = if (themeColor == android.graphics.Color.BLACK) {
+                // 黒の場合は少し薄く
+                androidx.core.graphics.ColorUtils.blendARGB(themeColor, android.graphics.Color.WHITE, 0.3f)
+            } else {
+                // その他の色は少し濃く
+                androidx.core.graphics.ColorUtils.blendARGB(themeColor, android.graphics.Color.BLACK, 0.2f)
+            }
+            binding.imageIcon.background = ColorDrawable(iconBackgroundColor)
             
             binding.root.setOnClickListener {
                 onItemClick(item, position)

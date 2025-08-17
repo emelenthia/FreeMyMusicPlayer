@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -15,6 +16,7 @@ import com.enzo.freemymusicplayer.model.RepeatMode
 import com.enzo.freemymusicplayer.model.Song
 import com.enzo.freemymusicplayer.model.InternalPlaylist
 import com.enzo.freemymusicplayer.service.MusicPlayerService
+import com.enzo.freemymusicplayer.service.PlayCountManager
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +33,8 @@ class MusicPlayerController(private val context: Context) {
     private var internalPlaylist: InternalPlaylist? = null
     private var positionUpdateJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Main)
+    private val playCountManager = PlayCountManager(context)
+    private var hasCountedCurrentSong = false
     
     init {
         initializeController()
@@ -68,6 +72,8 @@ class MusicPlayerController(private val context: Context) {
                     updateCurrentIndex()
                     updatePlayerState()
                 }
+                // 新しい曲に移ったら再生回数フラグをリセット
+                hasCountedCurrentSong = false
             }
         })
     }
@@ -76,7 +82,21 @@ class MusicPlayerController(private val context: Context) {
         positionUpdateJob = scope.launch {
             while (true) {
                 updatePosition()
+                checkAndIncrementPlayCount()
                 delay(1000)
+            }
+        }
+    }
+    
+    private fun checkAndIncrementPlayCount() {
+        val controller = mediaController ?: return
+        if (controller.isPlaying && !hasCountedCurrentSong && controller.currentPosition > 1000) {
+            // 1秒以上再生したらカウントアップ（動作確認用）
+            val currentSong = getCurrentSong()
+            currentSong?.let { song ->
+                playCountManager.incrementPlayCount(song.id)
+                hasCountedCurrentSong = true
+                updatePlayerState() // 表示を更新
             }
         }
     }
@@ -108,9 +128,15 @@ class MusicPlayerController(private val context: Context) {
         // ExoPlayerに設定（常に元の辞書順）
         val originalSongs = internalPlaylist?.getOriginalSongs() ?: emptyList()
         val mediaItems = originalSongs.map { song ->
+            val metadata = MediaMetadata.Builder()
+                .setTitle(song.getDisplayTitle())
+                .setArtist(song.getDisplayArtist())
+                .build()
+            
             MediaItem.Builder()
                 .setUri(song.uri)
                 .setMediaId(song.id.toString())
+                .setMediaMetadata(metadata)
                 .build()
         }
         
@@ -339,5 +365,21 @@ class MusicPlayerController(private val context: Context) {
     fun release() {
         positionUpdateJob?.cancel()
         mediaController?.release()
+    }
+    
+    fun getPlayCount(songId: Long): Int {
+        return playCountManager.getPlayCount(songId)
+    }
+    
+    private fun getCurrentSong(): Song? {
+        val mediaIndex = mediaController?.currentMediaItemIndex ?: -1
+        if (mediaIndex < 0) return null
+        
+        val originalSongs = internalPlaylist?.getOriginalSongs() ?: return null
+        return if (mediaIndex < originalSongs.size) {
+            originalSongs[mediaIndex]
+        } else {
+            null
+        }
     }
 }
