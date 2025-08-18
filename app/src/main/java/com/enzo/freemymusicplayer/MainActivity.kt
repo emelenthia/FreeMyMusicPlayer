@@ -40,6 +40,8 @@ class MainActivity : BaseActivity() {
     private var browserItems = mutableListOf<BrowserItem>()
     private var currentFolder: MusicFolder? = null
     private var isInFolderView = false
+    private var scrollPosition = 0
+    private var scrollOffset = 0
     
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -235,9 +237,19 @@ class MainActivity : BaseActivity() {
         }
         
         browserAdapter.notifyDataSetChanged()
+        
+        // 以前のスクロール位置を復元
+        val layoutManager = binding.recyclerViewSongs.layoutManager as LinearLayoutManager
+        layoutManager.scrollToPositionWithOffset(scrollPosition, scrollOffset)
     }
     
     private fun showSongsInFolder(folder: MusicFolder) {
+        // フォルダリストのスクロール位置を保存
+        val layoutManager = binding.recyclerViewSongs.layoutManager as LinearLayoutManager
+        scrollPosition = layoutManager.findFirstVisibleItemPosition()
+        val firstVisibleView = layoutManager.findViewByPosition(scrollPosition)
+        scrollOffset = firstVisibleView?.top ?: 0
+        
         isInFolderView = true
         currentFolder = folder
         browserItems.clear()
