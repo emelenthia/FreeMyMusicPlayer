@@ -4,34 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/topBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:elevation="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/textStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="音楽を読み込み中..."
-            android:textSize="16sp"
-            android:gravity="center" />
-
-    </LinearLayout>
-
     <!-- コンテンツエリア（曲一覧と再生制御） -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/contentArea"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -40,6 +18,7 @@
             android:id="@+id/recyclerViewSongs"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="56dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -60,7 +39,7 @@
         <LinearLayout
             android:id="@+id/playerControls"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="186dp"
             android:orientation="vertical"
             android:paddingTop="24dp"
             android:paddingBottom="32dp"
@@ -71,9 +50,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-        <RelativeLayout
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="24dp"
             android:layout_marginBottom="2dp">
 
             <TextView
@@ -83,26 +62,30 @@
                 android:text="曲が選択されていません"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:gravity="center" />
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:layout_marginStart="40dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginTop="-2dp"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
             <TextView
                 android:id="@+id/textPlayCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignBottom="@id/textCurrentSong"
+                android:layout_gravity="end|center_vertical"
                 android:text=""
                 android:textSize="10sp"
                 android:alpha="0.7"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="2dp" />
+                android:layout_marginEnd="16dp" />
 
-        </RelativeLayout>
+        </FrameLayout>
 
         <TextView
             android:id="@+id/textCurrentArtist"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="20dp"
             android:text=""
             android:textSize="12sp"
             android:gravity="center"

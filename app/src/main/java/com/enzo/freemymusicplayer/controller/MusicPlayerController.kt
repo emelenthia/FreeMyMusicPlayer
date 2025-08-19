@@ -61,7 +61,7 @@ class MusicPlayerController(private val context: Context) {
                 
                 // 曲が終了した場合の処理
                 if (playbackState == Player.STATE_ENDED) {
-                    handleTrackEnded()
+                    handlePlaybackEnded()
                 }
             }
             
@@ -70,12 +70,10 @@ class MusicPlayerController(private val context: Context) {
             }
             
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
-                    handleTrackEnded()
-                } else {
-                    updateCurrentIndex()
-                    updatePlayerState()
-                }
+                // MediaItemTransitionは曲が既に変わった後に呼ばれるため、
+                // ここでは単純に内部プレイリストの現在位置を同期させるだけ
+                updateCurrentIndex()
+                updatePlayerState()
                 // 新しい曲に移ったら再生回数フラグをリセット
                 hasCountedCurrentSong = false
             }
@@ -284,44 +282,47 @@ class MusicPlayerController(private val context: Context) {
         }
     }
     
-    private fun handleTrackEnded() {
+    private fun handlePlaybackEnded() {
         val currentState = _playerState.value ?: return
         val playlist = internalPlaylist ?: return
         
-        val nextSong = when (currentState.repeatMode) {
+        when (currentState.repeatMode) {
             RepeatMode.ONE -> {
-                // 単曲リピート: 現在の曲を返す
-                playlist.getCurrentItem()?.song
+                // 単曲リピート: 現在の曲を再生
+                mediaController?.seekToDefaultPosition()
+                mediaController?.play()
             }
             RepeatMode.ALL -> {
-                // 現在位置を更新
-                updateCurrentIndex()
                 // 全曲リピート: 次の曲、最後なら最初の曲
                 if (playlist.hasNext()) {
                     playlist.moveToNext()
-                    playlist.getCurrentItem()?.song
+                    val nextSong = playlist.getCurrentItem()?.song
+                    val originalIndex = findOriginalIndex(nextSong)
+                    if (originalIndex >= 0) {
+                        mediaController?.seekToDefaultPosition(originalIndex)
+                    }
                 } else {
                     playlist.setCurrentPosition(0)
-                    playlist.getCurrentItem()?.song
+                    val firstSong = playlist.getCurrentItem()?.song
+                    val originalIndex = findOriginalIndex(firstSong)
+                    if (originalIndex >= 0) {
+                        mediaController?.seekToDefaultPosition(originalIndex)
+                    }
                 }
             }
             RepeatMode.NONE -> {
-                // 現在位置を更新
-                updateCurrentIndex()
                 // リピートなし: 次の曲、最後なら停止
                 if (playlist.hasNext()) {
                     playlist.moveToNext()
-                    playlist.getCurrentItem()?.song
+                    val nextSong = playlist.getCurrentItem()?.song
+                    val originalIndex = findOriginalIndex(nextSong)
+                    if (originalIndex >= 0) {
+                        mediaController?.seekToDefaultPosition(originalIndex)
+                    }
                 } else {
                     mediaController?.stop()
-                    return
                 }
             }
-        }
-
-        val originalIndex = findOriginalIndex(nextSong)
-        if (originalIndex >= 0) {
-            mediaController?.seekToDefaultPosition(originalIndex)
         }
     }
     

@@ -211,11 +211,6 @@ class MainActivity : BaseActivity() {
             
             showFolderList()
             
-            if (folders.isNotEmpty()) {
-                binding.textStatus.text = "${folders.size} フォルダが見つかりました"
-            } else {
-                binding.textStatus.text = "音楽フォルダが見つかりませんでした"
-            }
         }
     }
     
@@ -276,14 +271,16 @@ class MainActivity : BaseActivity() {
         }
         
         browserAdapter.notifyDataSetChanged()
-        binding.textStatus.text = "${folder.getDisplayName()} - ${folder.songCount} 曲"
+        
+        // 曲一覧は常に先頭から表示
+        (binding.recyclerViewSongs.layoutManager as LinearLayoutManager).scrollToPosition(0)
+        
     }
     
     private fun handleBrowserItemClick(item: BrowserItem, position: Int) {
         when (item.type) {
             BrowserItem.ItemType.BACK_BUTTON -> {
                 showFolderList()
-                binding.textStatus.text = "${folders.size} フォルダが見つかりました"
             }
             BrowserItem.ItemType.FOLDER -> {
                 item.folder?.let { folder ->
@@ -310,7 +307,6 @@ class MainActivity : BaseActivity() {
             override fun handleOnBackPressed() {
                 if (isInFolderView) {
                     showFolderList()
-                    binding.textStatus.text = "${folders.size} フォルダが見つかりました"
                 } else {
                     finish()
                 }
@@ -377,12 +373,7 @@ class MainActivity : BaseActivity() {
         binding.textPlayCount.setTextColor(playerTextColor)
         binding.textPlayCount.textSize = displaySize.songArtistSize * 0.8f
         
-        // topBarに薄いテーマカラーを適用
-        binding.topBar.background = ColorDrawable(lighterColor)
         
-        // ステータステキストの色とサイズを適用（薄いテーマカラーに対するコントラスト）
-        binding.textStatus.setTextColor(textColorForLighter)
-        binding.textStatus.textSize = displaySize.statusTextSize
         
         // RecyclerViewの背景色設定はapplySkinBackground()内で行うため、ここでは削除
         
